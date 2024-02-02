@@ -97,7 +97,38 @@ public class EmployeeController {
 
         return "redirect:/employees";
     }
-
+    
+    // 従業員更新画面
+    @GetMapping(value = "/{code}/update")
+    public String edit(@PathVariable("code") String code,Model model,Employee employee) {
+        if(code != null) {
+            model.addAttribute("employee", employeeService.findByCode(code));
+        }else {
+            model.addAttribute("employee",employee);
+        }
+        
+        return "employees/update";
+    }
+    
+    //従業員更新処理
+    @PostMapping(value = "/{code}/update")
+    public String update(@PathVariable("code") String code,@Validated Employee employee, BindingResult res, Model model) {
+        
+        // 入力チェック
+        if (res.hasErrors()) {
+            return edit(null,model,employee);
+        }
+        
+        ErrorKinds result = employeeService.update(code,employee);
+        
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return edit(null,model,employee);
+        }
+        
+        return "redirect:/employees";
+    }
+    
     // 従業員削除処理
     @PostMapping(value = "/{code}/delete")
     public String delete(@PathVariable String code, @AuthenticationPrincipal UserDetail userDetail, Model model) {
