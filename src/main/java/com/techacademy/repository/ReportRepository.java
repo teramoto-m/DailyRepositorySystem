@@ -9,4 +9,5 @@ import com.techacademy.entity.Report;
 
 public interface ReportRepository extends JpaRepository<Report, Integer>{
     List<Report> findByEmployee(Employee employee);
+    
 }

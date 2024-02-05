@@ -4,9 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.techacademy.constants.ErrorKinds;
+import com.techacademy.constants.ErrorMessage;
+import com.techacademy.entity.Report;
 import com.techacademy.service.ReportService;
 import com.techacademy.service.UserDetail;
 
@@ -25,7 +32,7 @@ public class ReportController {
     @GetMapping
     public String list(Model model, @AuthenticationPrincipal UserDetail userDetail) {
         
-     // 自分の権限を取得
+        // 自分の権限を取得
         String value = userDetail.getEmployee().getRole().getValue();
         
         if(value.equals("一般")){
@@ -38,5 +45,34 @@ public class ReportController {
         }
         return "reports/list";
     }
-
+    
+    // 日報新規登録画面
+    @GetMapping(value = "/add")
+    public String create(@ModelAttribute Report report,@AuthenticationPrincipal UserDetail userDetail,Model model) {
+        
+        model.addAttribute("userName",userDetail.getUsername());
+        
+        return "reports/new";
+    }
+    
+    // 日報新規登録処理
+    @PostMapping(value = "/add")
+    public String add(@Validated Report report, BindingResult res, Model model,@AuthenticationPrincipal UserDetail userDetail) {
+        //入力チェック
+        if (res.hasErrors()) {
+            return create(report,userDetail,model);
+        }
+        
+        //日報登録
+        ErrorKinds result = reportService.save(report,userDetail);
+        
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return create(report,userDetail,model);
+        }
+        
+        return "redirect:/reports";
+        
+    }
+    
 }
