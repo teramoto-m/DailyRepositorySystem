@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -46,6 +47,16 @@ public class ReportController {
         return "reports/list";
     }
     
+    // 日報詳細画面
+    @GetMapping(value = "/{id}/")
+    public String detail(@PathVariable("id") Integer id, Model model) {
+        
+        model.addAttribute("report", reportService.findById(id));
+        model.addAttribute("employee", reportService.findById(id).getEmployee());
+        
+        return "reports/detail";
+    }
+    
     // 日報新規登録画面
     @GetMapping(value = "/add")
     public String create(@ModelAttribute Report report,@AuthenticationPrincipal UserDetail userDetail,Model model) {
@@ -73,6 +84,14 @@ public class ReportController {
         
         return "redirect:/reports";
         
+    }
+    
+    // 従業員削除処理
+    @PostMapping(value = "/{id}/delete")
+    public String delete(@PathVariable("id") Integer id) {
+        reportService.delete(id);
+
+        return "redirect:/reports";
     }
     
 }

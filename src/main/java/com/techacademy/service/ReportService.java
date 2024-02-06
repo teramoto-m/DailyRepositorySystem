@@ -63,6 +63,17 @@ public class ReportService {
         return ErrorKinds.SUCCESS;
     }
     
+    // 日報削除
+    @Transactional
+    public void delete(Integer id) {
+        
+        Report report = findById(id);
+        LocalDateTime now = LocalDateTime.now();
+        report.setUpdatedAt(now);
+        report.setDeleteFlg(true);
+        
+    }
+    
     // 1件を検索
     public Report findById(Integer id) {
         // findByIdで検索
