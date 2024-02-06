@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.techacademy.constants.ErrorKinds;
+import com.techacademy.entity.Employee;
 import com.techacademy.entity.Report;
 import com.techacademy.repository.ReportRepository;
 
@@ -36,11 +37,20 @@ public class ReportService {
     @Transactional
     public ErrorKinds save(Report report,UserDetail userDetail) {
         
-        //日付重複チェック
-        if (findById(report.getId()).getEmployee().equals(userDetail.getEmployee()) && !(findById(report.getId()).getReportDate().equals(null))) {
-            return ErrorKinds.DATECHECK_ERROR;
-        }
+        // 引数であるuserDetailから ログインしている従業員情報を取得する 
+        Employee employee = userDetail.getEmployee();
 
+        // ReportResositoryを使って、ログインしている従業員が投稿した日報一覧を取得する
+        List<Report> reports = reportRepository.findByEmployee(employee);
+
+        // 上記日報一覧から、繰り返し構文で1つずつ日報を取り出して、その日報の投稿日と、引数の reportの持つ投稿日を比較する。
+        // 同じ投稿日があれば、繰り返し構文の中で、return ErrorKinds.DATECHECK_ERROR;　を実行する
+        for(Report record : reports){
+           if(record.getReportDate().equals(report.getReportDate())){
+               return ErrorKinds.DATECHECK_ERROR;
+           }
+        }
+        // reportインスタンスのセッターを使って ログインした従業員インスタンスをセットする
         report.setEmployee(userDetail.getEmployee());
         
         report.setDeleteFlg(false);
