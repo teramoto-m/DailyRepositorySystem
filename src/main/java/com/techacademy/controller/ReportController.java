@@ -37,8 +37,8 @@ public class ReportController {
         String value = userDetail.getEmployee().getRole().getValue();
         
         if(value.equals("一般")){
-            model.addAttribute("listSize", reportService.findByEmployee(userDetail).size());
-            model.addAttribute("reportList",reportService.findByEmployee(userDetail));
+            model.addAttribute("listSize", reportService.findByEmployee(userDetail.getEmployee()).size());
+            model.addAttribute("reportList",reportService.findByEmployee(userDetail.getEmployee()));
         }else{
         
         model.addAttribute("listSize", reportService.findAll().size());
@@ -86,7 +86,42 @@ public class ReportController {
         
     }
     
-    // 従業員削除処理
+    // 日報更新画面
+    @GetMapping(value = "/{id}/update")
+    public String edit(@PathVariable("id") Integer id,Model model,Report report) {
+        if(id != null) {
+        model.addAttribute("report", reportService.findById(id));
+        model.addAttribute("userName", reportService.findById(id).getEmployee().getName());
+        }else {
+            model.addAttribute("report",report);
+            model.addAttribute("userName",report.getEmployee().getName());
+        }
+        
+        return "reports/update";
+    }
+    
+    //従業員更新処理
+    @PostMapping(value = "/{id}/update")
+    public String update(@PathVariable("id") Integer id,@Validated Report report, BindingResult res, Model model) {
+        
+        report.setEmployee(reportService.findById(id).getEmployee());
+        
+        // 入力チェック
+        if (res.hasErrors()) {
+            return edit(null,model,report);
+        }
+        
+        ErrorKinds result = reportService.update(id,report);
+        
+        if (ErrorMessage.contains(result)) {
+            model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
+            return edit(null,model,report);
+        }
+        
+        return "redirect:/reports";
+    }
+    
+    // 日報削除処理
     @PostMapping(value = "/{id}/delete")
     public String delete(@PathVariable("id") Integer id) {
         reportService.delete(id);
